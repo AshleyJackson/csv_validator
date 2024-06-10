@@ -8,6 +8,8 @@
 	let valid_rows: string[] = [];
 	let invalid_rows: string[] = [];
 	let file: File | null = null;
+	let valid_messages: object[] = [];
+	let invalid_messages: object[] = [];
 
 	function format_date(date: Date): string {
 		const formatted_date = dayjs(date).format('Y-m-d');
@@ -69,16 +71,26 @@
 		const validator = await CSVFileValidator(file, config);
 		const valid_rows = validator.data;
 		const invalid_rows = validator.inValidData;
-
+		for (const row of invalid_rows) {
+			const message = row.message;
+			invalid_messages.push({ message });
+			// invalid_messages.push(message);
+		}
 		for (const row of valid_rows) {
-			console.log(row);
+			const message = row.message;
+			valid_messages.push({ message });
+			// valid_messages.push(message);
 		}
+		console.log(valid_rows);
+		console.log(invalid_rows);
+	}
 
-		function reset() {
-			// console.log('reset');
-			// file = null;
-			// validation_messages = [];
-		}
+	async function reset(e: any) {
+		console.log('reset');
+		// console.log(e);
+		// const state = e.target.value
+		// selected_tab = state;
+		// file = null;
 	}
 </script>
 
@@ -91,7 +103,10 @@
 	<div class="w-full flex mt-8 text-4xl gap-4 items-center justify-center">
 		{#each tab_state as state}
 			<button
-				on:click={() => ((selected_tab = state), reset())}
+				on:click={(e) => {
+					selected_tab = state;
+					reset(e);
+				}}
 				class="w-1/4 p-4 border-2 rounded-lg hover:bg-green-700 text-center bg-blue-500 hover:transition-colors {selected_tab ===
 				state
 					? 'bg-green-700'
@@ -101,18 +116,31 @@
 			</button>
 		{/each}
 	</div>
-	<!-- {#if selected_tab} -->
-	<input
-		class="mt-4 border p-2 rounded-lg justify-center items-center ml-auto mr-auto flex text-2xl"
-		type="file"
-		on:change={(e: any) => validate_csv(file=e.target.files[0], config_2026)}
-	/>
-	<!-- {#if validation_messages.length > 0 && !selected_tab} -->
-	<div class="mt-4 text-red-500">
-		<!-- {#each validation_messages as message}
-			{message}
-		{/each} -->
+	{#if selected_tab}
+		<input
+			class="mt-4 border p-2 rounded-lg justify-center items-center ml-auto mr-auto flex text-2xl"
+			type="file"
+			accept=".csv"
+			on:change={(e: any) => {
+			if (e.target.files[0].name.endsWith('.csv')) {
+				validate_csv(e.target.files[0], config_2008);
+			}
+		}}
+		/>
+	{/if}
+	<div>
+		test: {selected_tab}
 	</div>
-	<!-- {/if} -->
-	<!-- {/if} -->
 </section>
+<div class="mt-4 text-red-500">
+	{#if invalid_messages}
+		{#each invalid_messages as message}
+			invalid: {message}
+		{/each}
+	{/if}
+	{#if valid_messages}
+		{#each valid_messages as message}
+			valid: {message}
+		{/each}
+	{/if}
+</div>
